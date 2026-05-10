@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Weather App - Fixed Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:hover, select:hover {
+            border-color: #667eea;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+        #result {
+            margin-top: 30px;
+        }
+        .weather-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .weather-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .weather-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.2);
+            transform: translateY(-3px);
+        }
+        .weather-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .weather-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .weather-unit {
+            font-size: 12px;
+            color: #666;
+        }
+        .error {
+            background: #fff5f5;
+            border: 2px solid #feb2b2;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 15px;
+        }
+        .error.show {
+            display: block;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 15px;
+        }
+        .success.show {
+            display: block;
+        }
+        .loading {
+            text-align: center;
+            color: #667eea;
+            display: none;
+            padding: 30px;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .empty {
+            text-align: center;
+            padding: 50px 30px;
+            color: #999;
+        }
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        .location-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .info {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            color: #2d3748;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            .weather-card {
+                grid-template-columns: 1fr;
+            }
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☀️ Business Weather Forecast</h1>
+        <p class="subtitle">30-Day Advanced Weather Monitoring for Your Locations</p>
+        
+        <div class="form-group">
+            <label for="location">Select Location</label>
+            <select id="location">
+                <option value="">-- Choose a location --</option>
+                <option value="29.5853,79.6697">Mukteshwar</option>
+                <option value="12.2181,75.7399">Coorg</option>
+                <option value="29.8542,79.6304">Kausani</option>
+                <option value="29.2298,79.4456">Corbett</option>
+                <option value="25.8944,76.5033">Bookmark Resort Ranthambore</option>
+                <option value="28.5244,77.1855">Radisson Blu</option>
+                <option value="25.3299,82.9789">Taj Anand Kashi</option>
+                <option value="27.5330,88.6109">Taj Gangtok</option>
+                <option value="29.0588,77.7120">Aloha</option>
+                <option value="15.2993,73.8297">Kenilworth Resort Goa</option>
+                <option value="29.2298,79.4456">Taj Corbett</option>
+                <option value="26.9124,75.7873">Raas Chhatrasagar</option>
+                <option value="15.3395,73.8320">St. Regis Goa</option>
+                <option value="26.9124,70.8937">Taj Jaisalmer</option>
+                <option value="25.3299,74.7997">Cheetahgarh</option>
+                <option value="27.0410,88.2663">Taj Darjeeling</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="date">Select Date</label>
+            <input type="date" id="date">
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="getWeather()">🔍 Get Weather</button>
+            <button class="btn-secondary" onclick="resetForm()">🔄 Reset</button>
+        </div>
+        
+        <div id="success" class="success"></div>
+        <div id="error" class="error"></div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Loading weather data...
+        </div>
+        
+        <div id="result"></div>
+        
+        <div id="empty" class="empty">
+            <div class="empty-icon">📍</div>
+            <p>Select a location and date, then click "Get Weather"</p>
+        </div>
+        
+        <div class="info">
+            💡 <strong>Tip:</strong> You can check weather up to 30 days in advance. Perfect for planning your business operations!
+        </div>
+    </div>
+    
+    <script>
+        function initApp() {
+            const today = new Date().toISOString().split('T')[0];
+            const maxDate = new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('date').min = today;
+            document.getElementById('date').max = maxDate;
+        }
+        
+        async function getWeather() {
+            const locationValue = document.getElementById('location').value;
+            const dateValue = document.getElementById('date').value;
+            
+            if (!locationValue || !dateValue) {
+                showError('Please select both location and date');
+                return;
+            }
+            
+            const [lat, lon] = locationValue.split(',');
+            const locationName = document.getElementById('location').options[document.getElementById('location').selectedIndex].text;
+            
+            showLoading(true);
+            hideError();
+            
+            try {
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&start_date=${dateValue}&end_date=${dateValue}&daily=temperature_2m_max,temperature_2m_min,relative_humidity_2m_max,wind_speed_10m_max,precipitation_sum&temperature_unit=celsius&wind_speed_unit=kmh&timezone=auto`;
+                
+                console.log('Fetching from:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data received:', data);
+                
+                if (!data.daily || !data.daily.time || data.daily.time.length === 0) {
+                    throw new Error('No weather data available for the selected date');
+                }
+                
+                const daily = data.daily;
+                const tempMax = daily.temperature_2m_max[0];
+                const tempMin = daily.temperature_2m_min[0];
+                const humidity = daily.relative_humidity_2m_max[0];
+                const wind = Math.round(daily.wind_speed_10m_max[0]);
+                const rain = (daily.precipitation_sum[0] || 0).toFixed(1);
+                
+                const dateObj = new Date(dateValue);
+                const formattedDate = dateObj.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                const html = `
+                    <div class="location-name">${locationName} — ${formattedDate}</div>
+                    <div class="weather-card">
+                        <div class="weather-item">
+                            <div class="weather-label">Maximum Temperature</div>
+                            <div class="weather-value">${tempMax}°</div>
+                            <div class="weather-unit">Celsius</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Minimum Temperature</div>
+                            <div class="weather-value">${tempMin}°</div>
+                            <div class="weather-unit">Celsius</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Humidity</div>
+                            <div class="weather-value">${humidity}</div>
+                            <div class="weather-unit">Percent</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Wind Speed</div>
+                            <div class="weather-value">${wind}</div>
+                            <div class="weather-unit">km/h</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Precipitation</div>
+                            <div class="weather-value">${rain}</div>
+                            <div class="weather-unit">mm</div>
+                        </div>
+                        <div class="weather-item">
+                            <div class="weather-label">Status</div>
+                            <div class="weather-value" style="color: #27ae60; font-size: 20px;">✓</div>
+                            <div class="weather-unit">Data Confirmed</div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('result').innerHTML = html;
+                document.getElementById('empty').style.display = 'none';
+                showSuccess('Weather data loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error details:', error);
+                showError(`⚠️ Error: ${error.message}. Please check your internet connection and try again.`);
+                document.getElementById('result').innerHTML = '';
+                document.getElementById('empty').style.display = 'block';
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('location').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('empty').style.display = 'block';
+            hideError();
+            hideSuccess();
+        }
+        
+        function showError(msg) {
+            const error = document.getElementById('error');
+            error.textContent = msg;
+            error.classList.add('show');
+        }
+        
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+        
+        function showSuccess(msg) {
+            const success = document.getElementById('success');
+            success.textContent = '✓ ' + msg;
+            success.classList.add('show');
+            setTimeout(() => success.classList.remove('show'), 3000);
+        }
+        
+        function hideSuccess() {
+            document.getElementById('success').classList.remove('show');
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+        
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>
